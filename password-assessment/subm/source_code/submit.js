@@ -32,11 +32,8 @@ const codeDirectory = 'source_code';
 for (const file of sourcePaths) {
     let zipPath;
 
-    if (file === '../README.md'){
-        zipPath = 'README.md';
-    }
     // Check if the file path is one of the mock-api files
-    else if(file.startsWith('../mock-api/')) {
+    if (file.startsWith('../mock-api/')) {
         
         zipPath = `${codeDirectory}/${file.replace('../', '')}`;
     } else {
