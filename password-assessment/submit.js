@@ -55,6 +55,20 @@ export async function submitResume(tempUrl, cvPath, sourcePaths, dictPath) {
     console.log("Creating Zip...");
     const zipAsB64 = await createZipBase64(cvPath, sourcePaths, dictPath);
 
+    //Write the zip file so I can inspect if all the contents required for the test is there.
+    const zipBuffer = Buffer.from(zipAsB64, 'base64');
+    console.log("Writing zip to file to verify contents manually.");
+    fs.writeFileSync('subm.zip', zipBuffer);
+
+    //Check the filesize:
+    const fileSizeMB = zipBuffer.length / (1024 * 1024);
+    console.log(`Zip Size: ${fileSizeMB.toFixed(2)} MB`);
+
+    if (fileSizeMB > 5) {
+        console.error("WARNING: Zip exceeds max filesize of 5MB");
+        return
+    }
+
     const payload = {
         data: zipAsB64,
         name: process.env.NAME,
