@@ -1,7 +1,7 @@
 import 'dotenv/config';
-import fs from 'fs';
 import axios from 'axios';
 import archiver from 'archiver';
+import fs from 'fs';
 
 //Create zip file and return as Base64 string.
 function createZipBase64(cvPath, sourcePaths, dictPath){
@@ -41,7 +41,17 @@ archive.finalize();
 }
 
 //Submit final payload:
-export async function submitCV(tempUrl, cvPath, sourcePaths, dictPath) {
+export async function submitResume(tempUrl, cvPath, sourcePaths, dictPath) {
+
+    //Check if resume file exists:
+    if (!cvPath || !fs.existsSync(cvPath)){
+        console.error(
+            `ERROR: Resume file not found!
+            Specified path: {$cvPath}, please check that the file exists or the variable is set correctly. `
+        );
+        return;
+    }
+
     console.log("Creating Zip...");
     const zipAsB64 = await createZipBase64(cvPath, sourcePaths, dictPath);
 
