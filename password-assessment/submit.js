@@ -71,9 +71,9 @@ export async function submitResume(tempUrl, cvPath, sourcePaths, dictPath) {
 
     const payload = {
         data: zipAsB64,
-        name: process.env.NAME,
-        surname: process.env.SURNAME,
-        email: process.env.EMAIL
+        name: process.env.MY_NAME,
+        surname: process.env.MY_SURNAME,
+        email: process.env.MY_EMAIL
     };
 
     console.log(`Posting to ${tempUrl}`);
