@@ -66,7 +66,7 @@ async function startAttack() {
 
     if (successfullURL) {
         console.log('Attack finished. URL: ', successfullURL);
-        const sourceFiles = ['attack.js', 'submit.js', 'generateDict.js', 'package.json'];
+        const sourceFiles = ['attack.js', 'submit.js', 'generateDict.js', 'package.json', 'README.md', '.env.example', '../mock-api/server.js', '../mock-api/package.json', '../mock-api/.env.example'];
         await submitResume(successfullURL, CV_PATH, sourceFiles, 'dict.txt');
     } else {
         console.log("Attack finished. Password not found.");
