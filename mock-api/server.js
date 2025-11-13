@@ -4,7 +4,7 @@ import rateLimit from "express-rate-limit";
 
 //Express config:
 const app = express();
-app.use(express.json());
+app.use(express.json({ limit: '5mb' }));
 const PORT = process.env.MOCK_PORT || 4000;
 const CORRECT_PASSWORD = process.env.MOCK_CORRECT_PASSWORD;
 
