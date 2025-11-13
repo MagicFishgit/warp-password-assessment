@@ -10,7 +10,7 @@ const USERNAME = process.env.USERNAME;
 const CV_PATH = process.env.RESUME_PATH;
 
 //Define rate limiter:
-const limiter = new Bottleneck({ minTime: 105 }); //slow down requests to take longer than 10s to account for any network issues.
+const limiter = new Bottleneck({ minTime: 112 }); //slow down requests to just under 9/s to be safe.
 
 //Check Password
 
