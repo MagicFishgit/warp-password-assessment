@@ -1,4 +1,3 @@
-import { Readable } from 'stream';
 import fs from 'fs';
 import path from 'path';
 import axios from 'axios';
@@ -6,7 +5,7 @@ import Bottleneck from 'bottleneck';
 
 //Config
 const USERNAME = "John";
-const limiter = new Bottleneck({ minTime: 112 }); // Our safe 8.9 req/sec
+const limiter = new Bottleneck({ minTime: 112 }); // safe 9 req/sec
 
 //Password Check Function
 async function checkPassword(password, targetUrl) {
@@ -22,10 +21,13 @@ async function checkPassword(password, targetUrl) {
         return { success: false, password: password };
     }
 }
-const wrappedCheck = limiter.wrap(checkPassword);
 
 //GET Handler for Streaming
 export async function GET(request) {
+
+    //New limiter and wrapper per request. Fixes my issue where I had to ungracefully stop the limiter and then couldn't run it again.
+    const limiter = new Bottleneck({ minTime: 112});
+    const wrappedCheck = limiter.wrap(checkPassword);
     //Read the target query
     const { searchParams } = new URL(request.url);
     const target = searchParams.get('target');
@@ -91,10 +93,6 @@ export async function GET(request) {
 
             sendEvent({ type: 'done', message: 'Attack finished.' });
             controller.close();
-            
-            // Restart limiter for next time
-            await limiter.schedule(() => {});
-            limiter.start();
         }
     });
 
