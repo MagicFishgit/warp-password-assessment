@@ -56,6 +56,7 @@ jobs:
               --restart always \
               -e MOCK_CORRECT_PASSWORD=${{ secrets.MOCK_CORRECT_PASSWORD }} \
               -e MOCK_PORT=${{ secrets.MOCK_PORT }} \
+              -e API_HOSTNAME="mock-api" \
               ${{ secrets.DOCKER_USERNAME }}/mock-api:latest
               
             # Deploy Frontend
