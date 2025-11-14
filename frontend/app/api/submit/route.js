@@ -68,8 +68,8 @@ function createZipBuffer(cvBuffer) {
         const codeDirectory = 'source_code';
         const frontendSourceFiles = [
             'package.json',
-            'next.config.js',
-            'tailwind.config.js',
+            'next.config.mjs',
+            '.env.example',
             'app/page.js',
             'app/layout.js',
             'app/globals.css',

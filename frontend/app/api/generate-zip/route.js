@@ -52,8 +52,7 @@ function createZipBuffer(cvBuffer) {
         // List of source files (relative to sourceRoot)
         const frontendSourceFiles = [
             'package.json',
-            'next.config.js',
-            'tailwind.config.js',
+            'next.config.mjs',
             '.env.example',
             'app/page.js',
             'app/layout.js',
