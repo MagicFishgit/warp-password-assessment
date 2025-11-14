@@ -54,6 +54,8 @@ jobs:
               --name mock-api \
               --network assessment-net \
               --restart always \
+              -e MOCK_CORRECT_PASSWORD=${{ secrets.MOCK_CORRECT_PASSWORD }} \
+              -e MOCK_PORT=${{ secrets.MOCK_PORT }} \
               ${{ secrets.DOCKER_USERNAME }}/mock-api:latest
               
             # Deploy Frontend
