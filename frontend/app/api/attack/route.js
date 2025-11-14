@@ -33,9 +33,15 @@ export async function GET(request) {
     const target = searchParams.get('target');
 
     //Select the URL based on the query
-    const TARGET_URL = target === 'real' 
-        ? process.env.TARGET_API_URL_SECRET 
-        : process.env.MOCK_API_INTERNAL_URL;
+    let TARGET_URL;
+    if (target === 'real') {
+        TARGET_URL = process.env.TARGET_API_URL_SECRET;
+    } else {
+        // Check if in production or development
+        TARGET_URL = process.env.NODE_ENV === 'production'
+            ? process.env.MOCK_API_INTERNAL_URL  // Use Docker URL
+            : process.env.MOCK_API_LOCAL_URL;    // Use Localhost URL
+    }
 
     const dictPath = path.join(process.cwd(), 'dict.txt');
     if (!fs.existsSync(dictPath)) {

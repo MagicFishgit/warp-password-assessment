@@ -1,4 +1,4 @@
-'use client';
+'use client'; 
 
 import { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
@@ -15,14 +15,15 @@ const LogItem = ({ log }) => {
     return <div className={`font-mono text-sm ${color}`}>{log.message}</div>;
 };
 
-//Main Page Component
+//Main Page Component 
 export default function Home() {
     const [logs, setLogs] = useState([]);
     const [isRunning, setIsRunning] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [isDownloading, setIsDownloading] = useState(false); // --- NEW STATE ---
     const [successfulUrl, setSuccessfulUrl] = useState(null);
     const [cvFile, setCvFile] = useState(null);
-    const [attackTarget, setAttackTarget] = useState('mock'); // 'mock' or 'real'
+    const [attackTarget, setAttackTarget] = useState('mock');
     
     const eventSourceRef = useRef(null);
     const scrollAreaRef = useRef(null);
@@ -35,7 +36,7 @@ export default function Home() {
         }
     }, [logs]);
 
-    //Cleanup EventSource on unmount
+    // Cleanup EventSource on unmount
     useEffect(() => {
         return () => {
             if (eventSourceRef.current) {
@@ -50,8 +51,11 @@ export default function Home() {
         setLogs([{ type: 'log', message: `Starting attack against ${attackTarget} target...` }]);
         setSuccessfulUrl(null);
 
-        //Pass the target as a query param
-        const es = new EventSource(`/api/attack?target=${attackTarget}`);
+        const apiUrl = attackTarget === 'real'
+            ? `/api/attack?target=real`
+            : `/api/attack?target=mock`;
+
+        const es = new EventSource(apiUrl);
         eventSourceRef.current = es;
 
         es.onmessage = (event) => {
@@ -104,14 +108,65 @@ export default function Home() {
                 throw new Error(result.error || "Submission failed");
             }
             
-            setLogs((prev) => [...prev, { type: 'success', message: `Submission successful! ${result.message}` }]);
+            setLogs((prev) => [...prev, { type: 'success', message: `✅ Submission successful! ${result.message}` }]);
 
         } catch (error) {
-            setLogs((prev) => [...prev, { type: 'error', message: `Submission error: ${error.message}` }]);
+            setLogs((prev) => [...prev, { type: 'error', message: `❌ Submission error: ${error.message}` }]);
         } finally {
             setIsSubmitting(false);
         }
     };
+
+    //NEW DOWNLOAD HANDLER
+    const handleDownload = async () => {
+        if (!cvFile) {
+            alert("Please select your CV file first to include it in the zip.");
+            return;
+        }
+        
+        setIsDownloading(true);
+        setLogs((prev) => [...prev, { type: 'log', message: 'Generating zip for download...' }]);
+
+        const formData = new FormData();
+        formData.append('cv', cvFile);
+
+        try {
+            const response = await fetch('/api/generate-zip', {
+                method: 'POST',
+                body: formData,
+            });
+
+            if (!response.ok) {
+                const err = await response.json();
+                throw new Error(err.message || 'Server failed to generate zip');
+            }
+
+            // Get the file data
+            const blob = await response.blob(); 
+            // Create a temporary, hidden link in the browser
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'submission.zip'; // The filename for the download
+            document.body.appendChild(a);
+            
+            // Click the link to trigger the browser's download dialog
+            a.click();
+            
+            // Clean up the temporary link
+            a.remove();
+            window.URL.revokeObjectURL(url);
+            
+            setLogs((prev) => [...prev, { type: 'success', message: 'Zip download started.' }]);
+
+        } catch (error) {
+            setLogs((prev) => [...prev, { type: 'error', message: `❌ Download error: ${error.message}` }]);
+        } finally {
+            setIsDownloading(false);
+        }
+    };
+    //END NEW HANDLER
+
 
     return (
         <main className="container mx-auto p-4 md:p-8">
@@ -123,7 +178,7 @@ export default function Home() {
                 <CardContent>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                         
-                        {/*Left Column: Controls */}
+                        {/* Left Column: Controls */}
                         <form onSubmit={handleSubmit} className="space-y-6">
                             <div className="space-y-2">
                                 <Label>Attack Target</Label>
@@ -146,23 +201,34 @@ export default function Home() {
                             </div>
                             
                             <div className="flex flex-col space-y-4">
-                                <Button type="button" onClick={startAttack} disabled={isRunning || isSubmitting}>
+                                <Button type="button" onClick={startAttack} disabled={isRunning || isSubmitting || isDownloading}>
                                     {isRunning ? 'Attack Running...' : '1. Launch Attack'}
                                 </Button>
                                 
-                                <Button type="submit" disabled={!successfulUrl || isSubmitting || isRunning}>
+                                <Button type="submit" disabled={!successfulUrl || isSubmitting || isRunning || isDownloading}>
                                     {isSubmitting ? 'Submitting...' : '2. Submit Application'}
                                 </Button>
+                                
+                                
+                                <Button 
+                                    type="button" 
+                                    variant="outline" 
+                                    onClick={handleDownload} 
+                                    disabled={isRunning || isSubmitting || isDownloading || !cvFile}
+                                >
+                                    {isDownloading ? 'Generating...' : 'Inspect Zip (Download)'}
+                                </Button>
+                                {/* END NEW BUTTON */}
                             </div>
                             
                             {successfulUrl && (
                                 <div className="text-green-600 text-sm font-medium">
-                                    ✅ Success! URL Found: {successfulUrl.substring(0, 100)}...
+                                    ✅ Success! URL Found: {successfulUrl.substring(0, 50)}...
                                 </div>
                             )}
                         </form>
                         
-                        {/*Right Column Log Viewer */}
+                        {/* Right Column: Log Viewer */}
                         <div className="flex flex-col">
                             <Label className="text-lg font-semibold mb-2">Attack Log</Label>
                             <ScrollArea ref={scrollAreaRef} className="h-[400px] w-full rounded-md border p-4 bg-gray-900 text-white">
