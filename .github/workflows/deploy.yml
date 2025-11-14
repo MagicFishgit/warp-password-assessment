@@ -1,0 +1,74 @@
+name: Build and Deploy Services
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch: 
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Build and push FRONTEND
+        uses: docker/build-push-action@v4
+        with:
+          context: ./frontend # Path to frontend Dockerfile
+          push: true
+          tags: ${{ secrets.DOCKER_USERNAME }}/frontend:latest
+
+      - name: Build and push MOCK-API
+        uses: docker/build-push-action@v4
+        with:
+          context: ./mock-api # Path to mock-api Dockerfile
+          push: true
+          tags: ${{ secrets.DOCKER_USERNAME }}/mock-api:latest
+
+  deploy:
+    needs: build-and-push # Wait for both images to be built
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy to VM via SSH
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.VM_HOST }}
+          username: ${{ secrets.VM_USER }}
+          key: ${{ secrets.VM_SSH_KEY }}
+          script: |
+            docker network create assessment-net || true
+            
+            #Deploy Mock API
+            docker stop mock-api || true
+            docker rm mock-api || true
+            docker pull ${{ secrets.DOCKER_USERNAME }}/mock-api:latest
+            docker run -d \
+              --name mock-api \
+              --network assessment-net \
+              --restart always \
+              ${{ secrets.DOCKER_USERNAME }}/mock-api:latest
+              
+            # Deploy Frontend
+            docker stop frontend || true
+            docker rm frontend || true
+            docker pull ${{ secrets.DOCKER_USERNAME }}/frontend:latest
+            docker run -d \
+              --name frontend \
+              -p 3001:3001 \
+              --network assessment-net \
+              --restart always \
+              -e PORT=3001 \
+              -e TARGET_API_URL_SECRET=${{ secrets.TARGET_API_URL_SECRET }} \
+              -e MY_NAME=${{ secrets.MY_NAME }} \
+              -e MY_SURNAME=${{ secrets.MY_SURNAME }} \
+              -e MY_EMAIL=${{ secrets.MY_EMAIL }} \
+              -e MOCK_API_INTERNAL_URL="http://mock-api:4000/v2/api/authenticate" \
+              ${{ secrets.DOCKER_USERNAME }}/frontend:latest
