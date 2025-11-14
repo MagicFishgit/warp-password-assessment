@@ -90,6 +90,6 @@ jobs:
               -e MY_NAME=${{ secrets.MY_NAME }} \
               -e MY_SURNAME=${{ secrets.MY_SURNAME }} \
               -e MY_EMAIL=${{ secrets.MY_EMAIL }} \
-              -e MOCK_API_INTERNAL_URL="http://mock-api:4g000/v2/api/authenticate" \
+              -e MOCK_API_INTERNAL_URL="http://mock-api:4000/v2/api/authenticate" \
               -e MOCK_API_LOCAL_URL="http://localhost:4000/v2/api/authenticate" \
               ${{ secrets.DOCKER_USERNAME }}/frontend:latest
