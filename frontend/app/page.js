@@ -157,12 +157,12 @@ export default function Home() {
                             
                             {successfulUrl && (
                                 <div className="text-green-600 text-sm font-medium">
-                                    ✅ Success! URL Found: {successfulUrl.substring(0, 50)}...
+                                    ✅ Success! URL Found: {successfulUrl.substring(0, 100)}...
                                 </div>
                             )}
                         </form>
                         
-                        {/*Right Column: Log Viewer */}
+                        {/*Right Column Log Viewer */}
                         <div className="flex flex-col">
                             <Label className="text-lg font-semibold mb-2">Attack Log</Label>
                             <ScrollArea ref={scrollAreaRef} className="h-[400px] w-full rounded-md border p-4 bg-gray-900 text-white">
