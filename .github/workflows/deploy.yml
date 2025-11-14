@@ -1,10 +1,11 @@
-name: Build and Deploy Services
+# .github/workflows/deploy.yml
+name: Build and Deploy Both Services
 
 on:
   push:
     branches:
       - main
-  workflow_dispatch: 
+  workflow_dispatch:
 
 jobs:
   build-and-push:
@@ -12,6 +13,21 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
+
+      # Prepare the files for the Docker build
+      - name: Prepare Frontend for zipping
+        run: |
+          #Make the directory Docker will look for
+          mkdir -p ./frontend/source-for-zip
+          
+          #Copy the root README.md into it
+          cp ./README.md ./frontend/source-for-zip/README.md
+          
+          #Copy the mock-api source into it
+          mkdir -p ./frontend/source-for-zip/mock-api
+          cp ./mock-api/server.js ./frontend/source-for-zip/mock-api/
+          cp ./mock-api/package.json ./frontend/source-for-zip/mock-api/package.json
+          cp ./mock-api/.env.example ./frontend/source-for-zip/mock-api/.env.example
 
       - name: Login to Docker Hub
         uses: docker/login-action@v2
@@ -22,19 +38,19 @@ jobs:
       - name: Build and push FRONTEND
         uses: docker/build-push-action@v4
         with:
-          context: ./frontend # Path to frontend Dockerfile
+          context: ./frontend # Build from the frontend directory
           push: true
           tags: ${{ secrets.DOCKER_USERNAME }}/frontend:latest
 
       - name: Build and push MOCK-API
         uses: docker/build-push-action@v4
         with:
-          context: ./mock-api # Path to mock-api Dockerfile
+          context: ./mock-api 
           push: true
           tags: ${{ secrets.DOCKER_USERNAME }}/mock-api:latest
 
   deploy:
-    needs: build-and-push # Wait for both images to be built
+    needs: build-and-push 
     runs-on: ubuntu-latest
     steps:
       - name: Deploy to VM via SSH
@@ -59,7 +75,7 @@ jobs:
               -e API_HOSTNAME="mock-api" \
               ${{ secrets.DOCKER_USERNAME }}/mock-api:latest
               
-            # Deploy Frontend
+            #Deploy Frontend
             docker stop frontend || true
             docker rm frontend || true
             docker pull ${{ secrets.DOCKER_USERNAME }}/frontend:latest
@@ -69,9 +85,11 @@ jobs:
               --network assessment-net \
               --restart always \
               -e PORT=3001 \
+              -e NODE_ENV=production \
               -e TARGET_API_URL_SECRET=${{ secrets.TARGET_API_URL_SECRET }} \
               -e MY_NAME=${{ secrets.MY_NAME }} \
               -e MY_SURNAME=${{ secrets.MY_SURNAME }} \
               -e MY_EMAIL=${{ secrets.MY_EMAIL }} \
-              -e MOCK_API_INTERNAL_URL="http://mock-api:4000/v2/api/authenticate" \
+              -e MOCK_API_INTERNAL_URL="http://mock-api:4g000/v2/api/authenticate" \
+              -e MOCK_API_LOCAL_URL="http://localhost:4000/v2/api/authenticate" \
               ${{ secrets.DOCKER_USERNAME }}/frontend:latest
