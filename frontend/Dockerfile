@@ -36,8 +36,7 @@ RUN mkdir -p /app/source-for-zip/mock-api
 
 # Copy frontend source files into the zip folder
 COPY --from=builder /app/package.json /app/source-for-zip/frontend/
-COPY --from=builder /app/next.config.js /app/source-for-zip/frontend/
-COPY --from=builder /app/tailwind.config.js /app/source-for-zip/frontend/
+COPY --from=builder /app/next.config.mjs /app/source-for-zip/frontend/
 COPY --from=builder /app/app/page.js /app/source-for-zip/frontend/app/
 COPY --from=builder /app/app/layout.js /app/source-for-zip/frontend/app/
 COPY --from=builder /app/app/globals.css /app/source-for-zip/frontend/app/
