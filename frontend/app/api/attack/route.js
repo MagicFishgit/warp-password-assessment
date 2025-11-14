@@ -33,7 +33,7 @@ export async function GET(request) {
     //Select the URL based on the query
     const TARGET_URL = target === 'real' 
         ? process.env.TARGET_API_URL_SECRET 
-        : process.env.NEXT_PUBLIC_MOCK_API_URL;
+        : process.env.MOCK_API_INTERNAL_URL;
 
     const dictPath = path.join(process.cwd(), 'dict.txt');
     if (!fs.existsSync(dictPath)) {
