@@ -5,7 +5,6 @@ import Bottleneck from 'bottleneck';
 
 //Config
 const USERNAME = "John";
-const limiter = new Bottleneck({ minTime: 112 }); // safe 9 req/sec
 
 //Password Check Function
 async function checkPassword(password, targetUrl) {
