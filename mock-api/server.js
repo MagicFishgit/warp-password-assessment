@@ -7,6 +7,7 @@ const app = express();
 app.use(express.json({ limit: '5mb' }));
 const PORT = process.env.MOCK_PORT || 4000;
 const CORRECT_PASSWORD = process.env.MOCK_CORRECT_PASSWORD;
+const API_HOSTNAME = process.env.API_HOSTNAME || 'localhost';
 
 //Rate limit config:
 const apiLimiter = rateLimit({
@@ -38,7 +39,7 @@ app.get("/v2/api/authenticate", (req, res) => {
     console.log("API Success");
     return res.status(200).json({
       message: "Success",
-      url: `http://localhost:${PORT}/v2/api/upload/mock-temp-url`,
+      url: `http://${API_HOSTNAME}:${PORT}/v2/api/upload/mock-temp-url`,
     });
   } else {
     console.log("API Failed");
@@ -57,6 +58,6 @@ app.post("/v2/api/upload/mock-temp-url", (req, res) => {
 });
 
 app.listen(PORT, () => {
-  console.log(`API server running on http://localhost:${PORT}`);
+  console.log(`API server running on http://${API_HOSTNAME}:${PORT}`);
   console.log(`Correct test password is set to: ${CORRECT_PASSWORD}`);
 });
