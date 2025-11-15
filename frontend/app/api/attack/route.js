@@ -12,12 +12,38 @@ async function checkPassword(password, targetUrl) {
         const response = await axios.get(targetUrl, {
             auth: { username: USERNAME, password: password }
         });
-        return { success: true, url: response.data.url, password: password };
-    } catch (error) {
-        if (error.response?.status === 429) {
-            return { success: false, retry: true, password: password };
+
+        const responseData = response.data;
+        let url;
+
+        if (typeof responseData === 'object' && responseData.url) {
+            //It's a JSON object
+            url = responseData.url;
+        } else {
+            //It's a text string
+            url = responseData; 
         }
-        return { success: false, password: password };
+
+        if (!url || typeof url !== 'string' || !url.startsWith('http')) {
+             //200 OK but the body was empty or not a URL
+             console.error(`Success response for ${password}, but no URL found.`);
+             return { success: false, password: password };
+        }
+
+        //Success case:
+        console.log(`Success, Password is: ${password}`);
+        return {success: true, url: url, password: password };
+
+    } catch (error) {
+        if (error.response?.status === 401){
+            console.log(`Incorrect Password: ${password}`);
+        } else if (error.response?.status === 429) {
+            console.warn(`RATE LIMIT HIT for ${password}.`);
+            return { success: false, retry: true, password: password };
+        } else {
+            console.error(`Error for ${password}:`, error.message);
+        }
+        return { success: false };
     }
 }
 
