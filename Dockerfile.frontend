@@ -50,7 +50,6 @@ COPY --from=builder /app/.env.example /app/source-for-zip/frontend/
 COPY --from=builder /app/app /app/source-for-zip/frontend/app
 COPY --from=builder /app/components /app/source-for-zip/frontend/components
 COPY --from=builder /app/lib /app/source-for-zip/frontend/lib
-COPY --from=builder /app/globals.css /app/source-for-zip/frontend/ 
 
 #Copy mock-api source and root README
 COPY --from=builder /app/mock-api /app/source-for-zip/mock-api/
