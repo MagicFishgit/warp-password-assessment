@@ -15,38 +15,34 @@ function createZipBuffer(cvBuffer) {
         const buffers = [];
         archive.on('data', (buffer) => buffers.push(buffer));
         archive.on('end', () => {
-            console.log("Zip buffer created for submission.");
+            console.log("Zip buffer created.");
             resolve(Buffer.concat(buffers)); // Return the raw buffer
         });
         archive.on('error', (err) => reject(err));
 
-        //Environment Path Logic
+        //Environment-Aware Path Logic 
         const isProduction = process.env.NODE_ENV === 'production';
         const cwd = process.cwd(); // This is /app in Docker, /frontend locally
-
+        
+        // This is the base folder where all source files are kept in production
         const prodSourceRoot = path.join(cwd, 'source-for-zip');
 
         // Define the roots for source code
-        // In Docker: /app/source-for-zip/frontend
         const frontendSourceRoot = isProduction 
             ? path.join(prodSourceRoot, 'frontend') 
-            : cwd;
+            : cwd;                                  
             
-        // In Docker: /app/source-for-zip/mock-api 
         const mockApiSourceRoot = isProduction 
-            ? path.join(prodSourceRoot, 'mock-api')
-            : path.join(cwd, '../mock-api');
+            ? path.join(prodSourceRoot, 'mock-api') 
+            : path.join(cwd, '../mock-api');      
 
-        // In Docker: /app/dict.txt
-        // Locally: /frontend/dict.txt
+        //Docker: /app/dict.txt. Locally: /frontend/dict.txt
         const dictPath = path.join(cwd, 'dict.txt');
         
-        // In Docker: /app/source-for-zip/README.md
-        // Locally: /README.md 
+        //Docker: /app/source-for-zip/README.md. Locally: ../README.md
         const readmePath = isProduction 
-            ? path.join(cwd, 'source-for-zip', 'README.md')
+            ? path.join(prodSourceRoot, 'README.md')
             : path.join(cwd, '../README.md'); 
-
 
         //Add CV
         archive.append(cvBuffer, { name: 'cv.pdf' });
@@ -65,7 +61,7 @@ function createZipBuffer(cvBuffer) {
             console.warn(`[ZIP] Missing root README.md at: ${readmePath}`);
         }
 
-        //Add Frontend Source Code ---
+        //Add Frontend Source Code
         const codeDirectory = 'source_code';
         const frontendSourceFiles = [
             'package.json',
@@ -76,7 +72,13 @@ function createZipBuffer(cvBuffer) {
             'app/globals.css',
             'app/api/attack/route.js',
             'app/api/submit/route.js',
-            'app/api/generate-zip/route.js'
+            'app/api/generate-zip/route.js',
+            'components/ui/button.js', 
+            'components/ui/card.js',
+            'components/ui/input.js',
+            'components/ui/label.js',
+            'components/ui/scroll-area.js',
+            'lib/utils.js'
         ];
 
         for (const file of frontendSourceFiles) {
@@ -89,7 +91,7 @@ function createZipBuffer(cvBuffer) {
             }
         }
         
-        // Mock API Source Code
+        // --- 5. Add Mock API Source Code ---
         const mockApiSourceFiles = [
             'server.js',
             'package.json',

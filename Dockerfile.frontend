@@ -56,6 +56,4 @@ COPY --from=builder /app/globals.css /app/source-for-zip/frontend/
 COPY --from=builder /app/mock-api /app/source-for-zip/mock-api/
 COPY --from=builder /app/README.md /app/source-for-zip/README.md
 
-#END OF ZIP FILE SETUP
-
 CMD ["node", "server.js"]
