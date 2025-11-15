@@ -1,0 +1,59 @@
+#Stage 1: Dependency
+FROM node:20-alpine AS deps
+WORKDIR /app
+
+#Copy only the package files from the frontend folder
+COPY frontend/package.json frontend/package-lock.json ./
+RUN npm install
+
+#Stage 2: Builder
+FROM node:20-alpine AS builder
+WORKDIR /app
+COPY --from=deps /app/node_modules ./node_modules
+
+#Copy all of the frontend app's source code
+COPY ./frontend/ .
+
+#Copy the dictionary
+COPY ./password-assessment/dict.txt ./dict.txt 
+
+#Copy the root README.md
+COPY ./README.md ./README.md
+
+#Copy the mock-api source for zipping
+COPY ./mock-api ./mock-api
+
+RUN npm run build
+
+#Stage 3: Runner
+FROM node:20-alpine
+WORKDIR /app
+ENV NODE_ENV=production
+ENV PORT=3001
+EXPOSE 3001
+
+COPY --from=builder /app/public ./public
+COPY --from=builder /app/.next/standalone ./
+COPY --from=builder /app/.next/static ./.next/static
+
+#Copy files needed for the final zi
+COPY --from=builder /app/dict.txt ./dict.txt
+
+#Create the folder structure for zipping
+RUN mkdir -p /app/source-for-zip/frontend
+RUN mkdir -p /app/source-for-zip/mock-api
+
+#Copy frontend source files from the builder
+COPY --from=builder /app/package.json /app/source-for-zip/frontend/
+COPY --from=builder /app/next.config.mjs /app/source-for-zip/frontend/
+COPY --from=builder /app/.env.example /app/source-for-zip/frontend/
+COPY --from=builder /app/app /app/source-for-zip/frontend/app
+COPY --from=builder /app/components /app/source-for-zip/frontend/components
+COPY --from=builder /app/lib /app/source-for-zip/frontend/lib
+COPY --from=builder /app/globals.css /app/source-for-zip/frontend/ 
+
+#Copy mock-api source and root README
+COPY --from=builder /app/mock-api /app/source-for-zip/mock-api/
+COPY --from=builder /app/README.md /app/source-for-zip/README.md
+
+CMD ["node", "server.js"]
