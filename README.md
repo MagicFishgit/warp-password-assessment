@@ -11,6 +11,8 @@ The complete, deployed full-stack application is live and accessible here:
 
 **[https://forgetfulme.magicfish.dev/]**
 
+Please have a look at the project in my GitHub: **https://github.com/MagicFishgit/warp-password-assessment**
+
 -----
 
 ## 🏗️ Full-Stack Project Overview
