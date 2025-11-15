@@ -1,0 +1,12 @@
+FROM node:18-alpine
+WORKDIR /usr/src/app
+
+#Update copy paths to point into the mockapi folder
+COPY mock-api/package*.json ./
+RUN npm install
+
+#Copy the rest of the mock servers source code
+COPY mock-api/ .
+
+EXPOSE 4000
+CMD [ "node", "server.js" ]

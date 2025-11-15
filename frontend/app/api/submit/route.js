@@ -24,16 +24,17 @@ function createZipBuffer(cvBuffer) {
         const isProduction = process.env.NODE_ENV === 'production';
         const cwd = process.cwd(); // This is /app in Docker, /frontend locally
 
+        const prodSourceRoot = path.join(cwd, 'source-for-zip');
+
         // Define the roots for source code
-        // In Docker: /app/source-for-zip/frontend (set by Dockerfile)
+        // In Docker: /app/source-for-zip/frontend
         const frontendSourceRoot = isProduction 
-            ? path.join(cwd, 'source-for-zip', 'frontend') 
+            ? path.join(prodSourceRoot, 'frontend') 
             : cwd;
             
-        // In Docker: /app/source-for-zip/mock-api (set by Dockerfile)
-        // Locally: /mock-api (one level up from /frontend)
+        // In Docker: /app/source-for-zip/mock-api 
         const mockApiSourceRoot = isProduction 
-            ? path.join(cwd, 'source-for-zip', 'mock-api')
+            ? path.join(prodSourceRoot, 'mock-api')
             : path.join(cwd, '../mock-api');
 
         // In Docker: /app/dict.txt
@@ -41,7 +42,7 @@ function createZipBuffer(cvBuffer) {
         const dictPath = path.join(cwd, 'dict.txt');
         
         // In Docker: /app/source-for-zip/README.md
-        // Locally: /README.md (one level up from /frontend)
+        // Locally: /README.md 
         const readmePath = isProduction 
             ? path.join(cwd, 'source-for-zip', 'README.md')
             : path.join(cwd, '../README.md'); 

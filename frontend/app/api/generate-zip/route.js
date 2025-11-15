@@ -20,7 +20,7 @@ function createZipBuffer(cvBuffer) {
         // This is the base folder where all source files are kept in production
         const prodSourceRoot = path.join(cwd, 'source-for-zip');
 
-        //In Docker, code is in /app/source-for-zip. Locally, it's in the project root.
+        //In Docker code is in /app/source-for-zip. Locally it's in the project root.
         const frontendSourceRoot = isProduction 
             ? path.join(prodSourceRoot, 'frontend')
             : cwd;
@@ -28,7 +28,7 @@ function createZipBuffer(cvBuffer) {
         // In Docker: /app/source-for-zip/mock-api
         // Locally: /mock-api
         const mockApiSourceRoot = isProduction 
-            ? path.join(frontendSourceRoot, 'mock-api')
+            ? path.join(prodSourceRoot, 'mock-api')
             : path.join(cwd, '../mock-api');
 
         // In Docker, dict.txt is at /app/dict.txt. Locally, it's at /frontend/dict.txt.
@@ -36,7 +36,7 @@ function createZipBuffer(cvBuffer) {
 
         // In Docker, README is in /app/source-for-zip/README.md. Locally, it's at ../README.md.
         const readmePath = isProduction 
-            ? path.join(frontendSourceRoot, 'README.md')
+            ? path.join(prodSourceRoot, 'README.md')
             : path.join(cwd, '../README.md'); 
 
         //Add CV from buffer
