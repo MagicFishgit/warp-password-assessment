@@ -33,7 +33,7 @@ This is a multi-service application designed to be robust, secure, and scalable.
       * An **Nginx** webserver acts as a **reverse proxy**, serving the `frontend` application.
       * The `mock-api` container is on a private Docker network, inaccessible from the public internet.
       * The domain is secured with **TLS/SSL encryption** via **Let's Encrypt** (Certbot).
-      * The server is hardened (UFW, fail2ban) and includes automated log rotation with `cron` to manage disk space.
+      * The server is hardened (UFW, fail2ban, SSH access only) and includes automated log rotation with `cron` to manage disk space.
 
 -----
 
