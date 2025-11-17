@@ -117,7 +117,7 @@ export default function Home() {
         }
     };
 
-    //NEW DOWNLOAD HANDLER
+    //Download Handler
     const handleDownload = async () => {
         if (!cvFile) {
             alert("Please select your CV file first to include it in the zip.");
